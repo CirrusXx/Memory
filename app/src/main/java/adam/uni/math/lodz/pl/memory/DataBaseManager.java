@@ -1,10 +1,13 @@
 package adam.uni.math.lodz.pl.memory;
+import android.app.DownloadManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.provider.BaseColumns;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class DataBaseManager extends SQLiteOpenHelper {

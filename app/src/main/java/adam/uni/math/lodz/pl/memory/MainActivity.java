@@ -1,19 +1,18 @@
 package adam.uni.math.lodz.pl.memory;
 
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.media.Image;
-import android.os.Parcel;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
-import java.io.ByteArrayOutputStream;
+import android.widget.ImageButton;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,97 +21,119 @@ public class MainActivity extends AppCompatActivity {
 
     static final int REQUEST_IMAGE_CAPTURE = 1;
     int counter = 1;
-    ImageView imageView1,imageView2,imageView3,imageView4;
+    String path1,path2,path3,path4;
     DataBaseManager dataBase = new DataBaseManager(this);
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        disableReplaceButtons();
-        imageView1 = findViewById(R.id.image1);
-        imageView2 = findViewById(R.id.image2);
-        imageView3 = findViewById(R.id.image3);
-        imageView4 = findViewById(R.id.image4);
-
+        setPlayButton(0);
     }
 
     public void takePhotoOnClick(View view) {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            startActivityForResult(takePictureIntent,REQUEST_IMAGE_CAPTURE);
-        }
-
+        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        String id = getId(view);
+        counter = Character.getNumericValue(id.charAt(lengthOfId(id)));
+    }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-
-            int viewID = getResources().getIdentifier("image"+counter,"id",getPackageName());
+            int viewID = getResources().getIdentifier("image" + counter, "id", getPackageName());
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
-            ImageView image = findViewById(viewID);
+            ImageButton image = findViewById(viewID);
             image.setImageBitmap(imageBitmap);
 
-            if(counter == 4)
-            {
-                enableReplaceAndGameActivityButtons();
+            setPath1(saveToInternalStorage(imageBitmap));
+            setPath2(saveToInternalStorage(imageBitmap));
+            setPath4(saveToInternalStorage(imageBitmap));
+            setPath3(saveToInternalStorage(imageBitmap));
+
+            if (counter == 4) {
+                setPlayButton(1);
             }
-            counter++;
         }
     }
 
-    public void replacePictureOnClick(View view)
-    {
-        TextView button = (TextView)view;
-        String pictureNumber = button.getText().toString();
-        counter = Integer.parseInt(pictureNumber);
-        takePhotoOnClick(view);
+    public static String getId(View view) {
+        return view.getResources().getResourceName(view.getId());
     }
 
-    public void disableReplaceButtons()
-    {
-        Button btn1 = findViewById(R.id.replacePicture1);
-        btn1.setEnabled(false);
-        Button btn2 = findViewById(R.id.replacePicture2);
-        btn2.setEnabled(false);
-        Button btn3 = findViewById(R.id.replacePicture3);
-        btn3.setEnabled(false);
-        Button btn4 = findViewById(R.id.replacePicture4);
-        btn4.setEnabled(false);
-        Button btn5 = findViewById(R.id.playButton);
-        btn5.setEnabled(false);
+    public int lengthOfId(String id) {
+        return id.length() - 1;
     }
 
-    public void enableReplaceAndGameActivityButtons()
-    {
-        Button btn1 = findViewById(R.id.replacePicture1);
-        btn1.setEnabled(true);
-        Button btn2 = findViewById(R.id.replacePicture2);
-        btn2.setEnabled(true);
-        Button btn3 = findViewById(R.id.replacePicture3);
-        btn3.setEnabled(true);
-        Button btn4 = findViewById(R.id.replacePicture4);
-        btn4.setEnabled(true);
-        Button btn5 = findViewById(R.id.playButton);
-        btn5.setEnabled(true);
-        Button btn6 = findViewById(R.id.takePhotoButton);
-        btn6.setEnabled(false);
+    public void setPlayButton(int value) {
+        Button play = findViewById(R.id.playButton);
+        if (value == 0)
+            play.setEnabled(false);
+        else
+            play.setEnabled(true);
     }
-    public void startGameActivity(View view)
-    {
-        BitmapDrawable drawable1 = (BitmapDrawable)imageView1.getDrawable();
-        Bitmap picture1 = drawable1.getBitmap();
-        BitmapDrawable drawable2 = (BitmapDrawable)imageView2.getDrawable();
-        Bitmap picture2 = drawable2.getBitmap();
-        BitmapDrawable drawable3 = (BitmapDrawable)imageView3.getDrawable();
-        Bitmap picture3 = drawable3.getBitmap();
-        BitmapDrawable drawable4 = (BitmapDrawable)imageView4.getDrawable();
-        Bitmap picture4 = drawable4.getBitmap();
 
+    private String saveToInternalStorage(Bitmap bitmapImage) {
+        ContextWrapper cw = new ContextWrapper(getApplicationContext());
+        File directory = cw.getDir("imageDir" + counter, Context.MODE_PRIVATE);
+        File myPath = new File(directory, "profile.jpg");
 
-        Intent intent = new Intent(this,Game.class);
-    //    intent.putExtra("images1",bundle);
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(myPath);
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return directory.getAbsolutePath();
+    }
+
+    public void startGameActivity(View view) {
+        Intent intent = new Intent(this, Game.class);
+        List<String> pathList = new ArrayList<>();
+        pathList.add(0,path1);
+        pathList.add(1,path2);
+        pathList.add(2,path3);
+        pathList.add(3,path4);
+        intent.putStringArrayListExtra("listOfPaths", (ArrayList<String>) pathList);
         startActivity(intent);
     }
 
+    public void setPath1(String path)
+    {
+        if(counter == 1)
+        {
+            path1 = path;
+        }
+    }
 
+    public void setPath2(String path)
+    {
+        if(counter == 2)
+        {
+            path2 = path;
+        }
+    }
+
+    public void setPath3(String path)
+    {
+        if(counter == 3)
+        {
+            path3 = path;
+        }
+    }
+
+    public void setPath4(String path)
+    {
+        if(counter == 4)
+        {
+            path4 = path;
+        }
+    }
 
 }
