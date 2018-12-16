@@ -21,7 +21,11 @@ public class MainActivity extends AppCompatActivity {
 
     static final int REQUEST_IMAGE_CAPTURE = 1;
     int counter = 1;
-    String path1,path2,path3,path4;
+    private String path1;
+    private String path2;
+    private String path3;
+    private String path4;
+
     DataBaseManager dataBase = new DataBaseManager(this);
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,16 +48,19 @@ public class MainActivity extends AppCompatActivity {
             Bitmap imageBitmap = (Bitmap) extras.get("data");
             ImageButton image = findViewById(viewID);
             image.setImageBitmap(imageBitmap);
-
-            setPath1(saveToInternalStorage(imageBitmap));
-            setPath2(saveToInternalStorage(imageBitmap));
-            setPath4(saveToInternalStorage(imageBitmap));
-            setPath3(saveToInternalStorage(imageBitmap));
+            setPaths(imageBitmap);
 
             if (counter == 4) {
                 setPlayButton(1);
             }
         }
+    }
+
+    private void setPaths(Bitmap imageBitmap) {
+        setPath1(saveToInternalStorage(imageBitmap));
+        setPath2(saveToInternalStorage(imageBitmap));
+        setPath4(saveToInternalStorage(imageBitmap));
+        setPath3(saveToInternalStorage(imageBitmap));
     }
 
     public static String getId(View view) {
@@ -76,7 +83,6 @@ public class MainActivity extends AppCompatActivity {
         ContextWrapper cw = new ContextWrapper(getApplicationContext());
         File directory = cw.getDir("imageDir" + counter, Context.MODE_PRIVATE);
         File myPath = new File(directory, "profile.jpg");
-
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(myPath);
@@ -96,10 +102,14 @@ public class MainActivity extends AppCompatActivity {
     public void startGameActivity(View view) {
         Intent intent = new Intent(this, Game.class);
         List<String> pathList = new ArrayList<>();
-        pathList.add(0,path1);
-        pathList.add(1,path2);
-        pathList.add(2,path3);
-        pathList.add(3,path4);
+        pathList.add(0,getPath1());
+        pathList.add(1,getPath1());
+        pathList.add(2,getPath2());
+        pathList.add(3,getPath2());
+        pathList.add(4,getPath3());
+        pathList.add(5,getPath3());
+        pathList.add(6,getPath4());
+        pathList.add(7,getPath4());
         intent.putStringArrayListExtra("listOfPaths", (ArrayList<String>) pathList);
         startActivity(intent);
     }
@@ -136,4 +146,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public String getPath1()
+    {
+        return path1;
+    }
+
+    public String getPath2()
+    {
+        return path2;
+    }
+
+    public String getPath3()
+    {
+        return path3;
+    }
+
+    public String getPath4()
+    {
+        return path4;
+    }
 }
