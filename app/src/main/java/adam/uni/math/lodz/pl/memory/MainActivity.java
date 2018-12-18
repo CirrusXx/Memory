@@ -26,8 +26,6 @@ public class MainActivity extends AppCompatActivity {
     private String path3;
     private String path4;
 
-    DataBaseManager dataBase = new DataBaseManager(this);
-
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -100,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startGameActivity(View view) {
-        Intent intent = new Intent(this, Game.class);
+        Intent intent = new Intent(this, GameActivity.class);
         List<String> pathList = new ArrayList<>();
         pathList.add(0,getPath1());
         pathList.add(1,getPath1());
