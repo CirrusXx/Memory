@@ -10,157 +10,158 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class MainActivity extends AppCompatActivity {
 
+    /**
+     *
+     */
     static final int REQUEST_IMAGE_CAPTURE = 1;
-    int counter = 1;
-    private String path1;
-    private String path2;
-    private String path3;
-    private String path4;
+    private int counterOfAddedPictures = 1;
+    private String pathOfTheFirstImage;
+    private String pathOfTheSecondImage;
+    private String pathOfTheThirdImage;
+    private String pathOfTheFourthImage;
+    String idOfTheSelectedPicture;
+    private List<String> pathList = new ArrayList<>();
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setPlayButton(0);
+        setPlayButtonOff();
     }
 
     public void takePhotoOnClick(View view) {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-        String id = getId(view);
-        counter = Character.getNumericValue(id.charAt(lengthOfId(id)));
+        idOfTheSelectedPicture = getIdOfTheSelectedPicture(view);
+        counterOfAddedPictures = Character.getNumericValue(idOfTheSelectedPicture.charAt(lengthOfId(idOfTheSelectedPicture)));
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            int viewID = getResources().getIdentifier("image" + counter, "id", getPackageName());
+            int viewID = getResources().getIdentifier("image" + counterOfAddedPictures, "id", getPackageName());
             Bundle extras = data.getExtras();
+            assert extras != null;
             Bitmap imageBitmap = (Bitmap) extras.get("data");
             ImageButton image = findViewById(viewID);
             image.setImageBitmap(imageBitmap);
             setPaths(imageBitmap);
 
-            if (counter == 4) {
-                setPlayButton(1);
+            if (counterOfAddedPictures == 4) {
+                setPlayButtonOn();
             }
         }
     }
 
-    private void setPaths(Bitmap imageBitmap) {
-        setPath1(saveToInternalStorage(imageBitmap));
-        setPath2(saveToInternalStorage(imageBitmap));
-        setPath4(saveToInternalStorage(imageBitmap));
-        setPath3(saveToInternalStorage(imageBitmap));
-    }
-
-    public static String getId(View view) {
-        return view.getResources().getResourceName(view.getId());
-    }
-
-    public int lengthOfId(String id) {
-        return id.length() - 1;
-    }
-
-    public void setPlayButton(int value) {
-        Button play = findViewById(R.id.playButton);
-        if (value == 0)
-            play.setEnabled(false);
-        else
-            play.setEnabled(true);
-    }
-
-    private String saveToInternalStorage(Bitmap bitmapImage) {
-        ContextWrapper cw = new ContextWrapper(getApplicationContext());
-        File directory = cw.getDir("imageDir" + counter, Context.MODE_PRIVATE);
-        File myPath = new File(directory, "profile.jpg");
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(myPath);
-            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                fos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return directory.getAbsolutePath();
-    }
-
-    public void startGameActivity(View view) {
+    public void startGameActivityOnClick(View view) {
         Intent intent = new Intent(this, GameActivity.class);
-        List<String> pathList = new ArrayList<>();
-        pathList.add(0,getPath1());
-        pathList.add(1,getPath1());
-        pathList.add(2,getPath2());
-        pathList.add(3,getPath2());
-        pathList.add(4,getPath3());
-        pathList.add(5,getPath3());
-        pathList.add(6,getPath4());
-        pathList.add(7,getPath4());
+        addPathsToTheList();
         intent.putStringArrayListExtra("listOfPaths", (ArrayList<String>) pathList);
         startActivity(intent);
     }
 
-    public void setPath1(String path)
-    {
-        if(counter == 1)
-        {
-            path1 = path;
+    private static String getIdOfTheSelectedPicture(View view) {
+        return view.getResources().getResourceName(view.getId());
+    }
+
+    private int lengthOfId(String id) {
+        return id.length() - 1;
+    }
+
+    private String saveToInternalStorage(Bitmap bitmapImage) {
+        ContextWrapper cw = new ContextWrapper(getApplicationContext());
+        File directoryOfThePicture = cw.getDir("imageDir" + counterOfAddedPictures, Context.MODE_PRIVATE);
+        File pathOfThePicture = new File(directoryOfThePicture, "profile.jpg");
+        FileOutputStream fileOutputStream = null;
+        try {
+            fileOutputStream = new FileOutputStream(pathOfThePicture);
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                assert fileOutputStream != null;
+                fileOutputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return directoryOfThePicture.getAbsolutePath();
+    }
+
+    private void setPlayButtonOn() {
+        Button play = findViewById(R.id.playButton);
+        play.setEnabled(true);
+    }
+
+    private void setPlayButtonOff() {
+        Button play = findViewById(R.id.playButton);
+        play.setEnabled(false);
+    }
+
+    private void addPathsToTheList() {
+        pathList.add(0, getPathOfTheFirstImage());
+        pathList.add(1, getPathOfTheFirstImage());
+        pathList.add(2, getPathOfTheSecondImage());
+        pathList.add(3, getPathOfTheSecondImage());
+        pathList.add(4, getPathOfTheThirdImage());
+        pathList.add(5, getPathOfTheThirdImage());
+        pathList.add(6, getPathOfTheFourthImage());
+        pathList.add(7, getPathOfTheFourthImage());
+    }
+
+    private void setPaths(Bitmap imageBitmap) {
+        setPathOfTheFirstImage(saveToInternalStorage(imageBitmap));
+        setPathOfTheSecondImage(saveToInternalStorage(imageBitmap));
+        setPathOfTheFourthImage(saveToInternalStorage(imageBitmap));
+        setPathOfTheThirdImage(saveToInternalStorage(imageBitmap));
+    }
+
+    private void setPathOfTheFirstImage(String path) {
+        if (counterOfAddedPictures == 1) {
+            pathOfTheFirstImage = path;
+
         }
     }
 
-    public void setPath2(String path)
-    {
-        if(counter == 2)
-        {
-            path2 = path;
+    private void setPathOfTheSecondImage(String path) {
+        if (counterOfAddedPictures == 2) {
+            pathOfTheSecondImage = path;
         }
     }
 
-    public void setPath3(String path)
-    {
-        if(counter == 3)
-        {
-            path3 = path;
+    private void setPathOfTheThirdImage(String path) {
+        if (counterOfAddedPictures == 3) {
+            pathOfTheThirdImage = path;
         }
     }
 
-    public void setPath4(String path)
-    {
-        if(counter == 4)
-        {
-            path4 = path;
+    private void setPathOfTheFourthImage(String path) {
+        if (counterOfAddedPictures == 4) {
+            pathOfTheFourthImage = path;
         }
     }
 
-    public String getPath1()
-    {
-        return path1;
+    private String getPathOfTheFirstImage() {
+        return pathOfTheFirstImage;
     }
 
-    public String getPath2()
-    {
-        return path2;
+    private String getPathOfTheSecondImage() {
+        return pathOfTheSecondImage;
     }
 
-    public String getPath3()
-    {
-        return path3;
+    private String getPathOfTheThirdImage() {
+        return pathOfTheThirdImage;
     }
 
-    public String getPath4()
-    {
-        return path4;
+    private String getPathOfTheFourthImage() {
+        return pathOfTheFourthImage;
     }
 }
